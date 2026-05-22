@@ -56,5 +56,18 @@
       <div class="level-list" id="levelList" aria-label="选择关卡"></div>
     </aside>
   </main>
+
+  <section class="bubble-overlay" id="bubbleOverlay" aria-label="过关气泡特效" aria-hidden="true">
+    <div class="bubble-panel" role="dialog" aria-modal="true" aria-labelledby="bubbleTitle">
+      <header class="bubble-header">
+        <div>
+          <span>过关特效</span>
+          <strong id="bubbleTitle">鼠标气泡特效</strong>
+        </div>
+        <button class="bubble-close" id="bubbleCloseButton" type="button" aria-label="关闭过关气泡特效">关闭</button>
+      </header>
+      <iframe id="bubbleFrame" title="过关气泡特效" loading="lazy"></iframe>
+    </div>
+  </section>
 </body>
 </html>

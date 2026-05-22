@@ -10,6 +10,10 @@
   const resetButton = document.querySelector('#resetButton');
   const nextButton = document.querySelector('#nextButton');
   const levelList = document.querySelector('#levelList');
+  const bubbleOverlay = document.querySelector('#bubbleOverlay');
+  const bubbleFrame = document.querySelector('#bubbleFrame');
+  const bubbleTitle = document.querySelector('#bubbleTitle');
+  const bubbleCloseButton = document.querySelector('#bubbleCloseButton');
 
   const worldWidth = 1280;
   const worldHeight = 720;
@@ -25,22 +29,6 @@
   const { Engine, Composite, Bodies, Body, Events, Vector } = window.Matter;
 
   const levels = [
-    {
-      name: '木塔前哨',
-      birds: 3,
-      pigs: [
-        { x: 960, y: 592, r: 24, hp: 70 },
-        { x: 1062, y: 498, r: 22, hp: 68 },
-      ],
-      blocks: [
-        { x: 900, y: 622, w: 26, h: 132, material: 'wood' },
-        { x: 1020, y: 622, w: 26, h: 132, material: 'wood' },
-        { x: 960, y: 548, w: 162, h: 26, material: 'wood' },
-        { x: 1005, y: 476, w: 26, h: 118, material: 'glass' },
-        { x: 1112, y: 604, w: 30, h: 170, material: 'wood' },
-        { x: 1058, y: 538, w: 140, h: 26, material: 'stone' },
-      ],
-    },
     {
       name: '双层堡垒',
       birds: 4,
@@ -101,6 +89,7 @@
   let settleStartedAt = 0;
   let lastTime = 0;
   let pullRatio = 0;
+  let bubbleOpenedForLevel = -1;
 
   function createEngine() {
     engine = Engine.create();
@@ -145,6 +134,7 @@
   }
 
   function resetLevel(index = currentLevel, keepScore = false) {
+    closeBubblePanel();
     currentLevel = (index + levels.length) % levels.length;
     createEngine();
     pigs = [];
@@ -153,6 +143,7 @@
     dragging = false;
     pullRatio = 0;
     settleStartedAt = 0;
+    bubbleOpenedForLevel = -1;
     const level = levels[currentLevel];
 
     const ground = makeRectangle(worldWidth / 2, 690, 1450, 76, 'wood', {
@@ -222,6 +213,7 @@
       if (pigs.length === 0) {
         gameState = 'won';
         statusText.textContent = currentLevel === levels.length - 1 ? '全部通关' : '关卡完成';
+        openBubblePanel();
       }
     }
 
@@ -328,6 +320,33 @@
       button.addEventListener('click', () => resetLevel(index));
       levelList.append(button);
     });
+  }
+
+  function openBubblePanel() {
+    if (!bubbleOverlay || !bubbleFrame || bubbleOpenedForLevel === currentLevel) return;
+
+    const levelIndex = currentLevel;
+    bubbleOpenedForLevel = currentLevel;
+
+    if (bubbleTitle) {
+      bubbleTitle.textContent = currentLevel === levels.length - 1 ? '全部通关气泡特效' : '过关气泡特效';
+    }
+
+    window.setTimeout(() => {
+      if (bubbleOpenedForLevel !== levelIndex) return;
+
+      bubbleFrame.src = `bubble-demo/index.html?level=${currentLevel + 1}`;
+      bubbleOverlay.classList.add('is-open');
+      bubbleOverlay.setAttribute('aria-hidden', 'false');
+      bubbleCloseButton?.focus();
+    }, 650);
+  }
+
+  function closeBubblePanel() {
+    if (!bubbleOverlay) return;
+
+    bubbleOverlay.classList.remove('is-open');
+    bubbleOverlay.setAttribute('aria-hidden', 'true');
   }
 
   function updateGame(time) {
@@ -651,6 +670,13 @@
   canvas.addEventListener('pointercancel', releaseDrag);
   resetButton.addEventListener('click', () => resetLevel(currentLevel));
   nextButton.addEventListener('click', () => resetLevel(currentLevel + 1, true));
+  bubbleCloseButton?.addEventListener('click', closeBubblePanel);
+  bubbleOverlay?.addEventListener('click', (event) => {
+    if (event.target === bubbleOverlay) closeBubblePanel();
+  });
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeBubblePanel();
+  });
   window.addEventListener('resize', resizeCanvas);
 
   resizeCanvas();
