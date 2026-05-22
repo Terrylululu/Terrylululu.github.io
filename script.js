@@ -170,6 +170,7 @@
       activeBird = null;
       gameState = pigs.length === 0 ? 'won' : 'ended';
       updateHud();
+      if (gameState === 'ended') openBubblePanel('failed');
       return;
     }
 
@@ -213,7 +214,7 @@
       if (pigs.length === 0) {
         gameState = 'won';
         statusText.textContent = currentLevel === levels.length - 1 ? '全部通关' : '关卡完成';
-        openBubblePanel();
+        openBubblePanel('won');
       }
     }
 
@@ -322,20 +323,22 @@
     });
   }
 
-  function openBubblePanel() {
+  function openBubblePanel(result = 'won') {
     if (!bubbleOverlay || !bubbleFrame || bubbleOpenedForLevel === currentLevel) return;
 
     const levelIndex = currentLevel;
     bubbleOpenedForLevel = currentLevel;
 
     if (bubbleTitle) {
-      bubbleTitle.textContent = currentLevel === levels.length - 1 ? '全部通关气泡特效' : '过关气泡特效';
+      bubbleTitle.textContent = result === 'failed'
+        ? '挑战失败气泡特效'
+        : currentLevel === levels.length - 1 ? '全部通关气泡特效' : '过关气泡特效';
     }
 
     window.setTimeout(() => {
       if (bubbleOpenedForLevel !== levelIndex) return;
 
-      bubbleFrame.src = `bubble-demo/index.html?level=${currentLevel + 1}`;
+      bubbleFrame.src = `bubble-demo/index.html?level=${currentLevel + 1}&result=${result}`;
       bubbleOverlay.classList.add('is-open');
       bubbleOverlay.setAttribute('aria-hidden', 'false');
       bubbleCloseButton?.focus();
